@@ -1,23 +1,10 @@
 import argparse
-import time
-
-from matplotlib import pyplot as plt
-from matplotlib.animation import FuncAnimation
 
 from env_generator import EnvironmentGenerator
 from paradise import Paradise
 
-ani: FuncAnimation
-paused = False
-paradise: Paradise
-args: argparse.Namespace
-
 
 def main():
-    global args
-    global paradise
-    global ani
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--width', type=int, default=100)
     parser.add_argument('--height', type=int, default=100)

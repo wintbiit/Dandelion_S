@@ -1,3 +1,4 @@
+import math
 import os
 
 import numpy as np
@@ -68,4 +69,4 @@ class EnvironmentGenerator:
     def generate_distance_int(self, plant_height: float) -> tuple:
         dx, dy = self.generate_distance(plant_height)
 
-        return int(dx), int(dy)
+        return math.floor(dx), math.floor(dy)

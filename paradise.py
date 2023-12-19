@@ -47,7 +47,6 @@ class Paradise:
         plt.xlabel('Width')
         plt.ylabel('Height')
         plt.show()
-        self.ani.event_source.stop()
         print('Simulation finished')
         plt.waitforbuttonpress()
 
@@ -63,9 +62,10 @@ class Paradise:
         elif event.key == 'escape':
             plt.close()
         elif event.key == 'a':
-            self.ani.pause()
+            plt.close()
+            print('Saving GIF...')
             self.ani.save('dandelion_spread.gif', writer='pillow', fps=30)
-            self.ani.resume()
+            print('GIF saved')
         elif event.key == 'r':
             plt.close()
             self.show(self.frames, self.interval)

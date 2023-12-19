@@ -1,4 +1,3 @@
-simpy
 numpy~=1.26.2
 matplotlib==3.8.0
 torch~=2.1.2

@@ -21,11 +21,11 @@ class Paradise:
         self.height = height
         self.env = env
 
-        self.land = np.zeros((width, height), dtype=np.float32)
-        self.land[0, 0] = 0.1
+        self.land = np.zeros((width, height), dtype=np.int32)
+        self.land[0, 0] = 1
         self.fig, self.ax = plt.subplots()
         self.img = self.ax.imshow(self.land, cmap='Greens', interpolation='nearest')
-        self.img.set_clim(vmin=0, vmax=3)
+        self.img.set_clim(vmin=0, vmax=30)
         self.fig.canvas.mpl_connect('key_press_event', self.on_key_press)
 
     def update(self, frame: int):
@@ -40,7 +40,7 @@ class Paradise:
             height = self.env.generate_plant_height()
             dx, dy = self.env.generate_distance_int(height)
             if 0 <= x + dx < self.width and 0 <= y + dy < self.height:
-                self.land[x + dx, y + dy] += 0.1
+                self.land[x + dx, y + dy] += 1
         self.img.set_array(self.land)
         return self.img,
 
@@ -53,7 +53,6 @@ class Paradise:
         plt.xlabel('Width')
         plt.ylabel('Height')
         plt.show(block=False)
-        print('Simulation finished')
         plt.waitforbuttonpress()
         plt.close()
 

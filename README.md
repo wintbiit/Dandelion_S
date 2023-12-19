@@ -1,6 +1,11 @@
 # 可能在模拟蒲公英传播
 
 ## Usage
+### Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
 ### Edit [.env file](./.env)
 ```dotenv
 # 水平风速下限

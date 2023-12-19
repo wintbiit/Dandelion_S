@@ -1,10 +1,28 @@
+import os
+
 import numpy as np
+from dotenv import load_dotenv
+
+load_dotenv()
+config_env = {
+    'HORIZ_WIND_MIN': float(os.getenv('HORIZ_WIND_MIN')),
+    'HORIZ_WIND_MAX': float(os.getenv('HORIZ_WIND_MAX')),
+    'VERT_WIND_MIN': float(os.getenv('VERT_WIND_MIN')),
+    'VERT_WIND_MAX': float(os.getenv('VERT_WIND_MAX')),
+    'SUBSIDE_HEIGHT_MIN': float(os.getenv('SUBSIDE_HEIGHT_MIN')),
+    'SUBSIDE_HEIGHT_MAX': float(os.getenv('SUBSIDE_HEIGHT_MAX')),
+    'SUBSIDE_SPEED_MIN': float(os.getenv('SUBSIDE_SPEED_MIN')),
+    'SUBSIDE_SPEED_MAX': float(os.getenv('SUBSIDE_SPEED_MAX')),
+    'PLANT_HEIGHT_MIN': float(os.getenv('PLANT_HEIGHT_MIN')),
+    'PLANT_HEIGHT_MAX': float(os.getenv('PLANT_HEIGHT_MAX')),
+}
 
 
 class EnvironmentGenerator:
-    def __init__(self, config: dict):
+    def __init__(self, config=None):
+        if config is None:
+            config = config_env
         self.config = config
-        print('EnvironmentGenerator initialized' + str(config))
 
     def generate_wind_horizontal(self):
         """随机水平风速"""
@@ -36,8 +54,9 @@ class EnvironmentGenerator:
         subside_height = self.generate_subside_height()
 
         distance = 0.4 * horizontal_wind_speed / np.log((subside_height - 0.63 * plant_height) / 0.13 * plant_height) \
-             * ((subside_height - 0.63 * plant_height) * np.log((subside_height - 0.63 * plant_height) / (np.e * 0.13 * plant_height)) + 0.13 * plant_height) \
-             / 0.4 / (subside_speed - vertical_wind_speed)
+                   * ((subside_height - 0.63 * plant_height) * np.log(
+            (subside_height - 0.63 * plant_height) / (np.e * 0.13 * plant_height)) + 0.13 * plant_height) \
+                   / 0.4 / (subside_speed - vertical_wind_speed)
 
         if np.isnan(distance):
             distance = 0

@@ -7,7 +7,6 @@ from env_generator import EnvironmentGenerator
 class Paradise:
     """Dandelion Spread Simulation Environment"""
     def __init__(self, width: int, height: int, env: EnvironmentGenerator):
-        self.ani = None
         self.width = width
         self.height = height
         self.env = env

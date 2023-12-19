@@ -26,20 +26,7 @@ def main():
 
     args = parser.parse_args()
 
-    config = {
-        'HORIZ_WIND_MIN': -3,
-        'HORIZ_WIND_MAX': 3,
-        'VERT_WIND_MIN': -0.1,
-        'VERT_WIND_MAX': 0.1,
-        'SUBSIDE_HEIGHT_MIN': 0.1,
-        'SUBSIDE_HEIGHT_MAX': 0.5,
-        'SUBSIDE_SPEED_MIN': 0.1,
-        'SUBSIDE_SPEED_MAX': 0.5,
-        'PLANT_HEIGHT_MIN': 0.1,
-        'PLANT_HEIGHT_MAX': 0.5
-    }
-
-    env = EnvironmentGenerator(config)
+    env = EnvironmentGenerator()
 
     paradise = Paradise(args.width, args.height, env)
     paradise.fig.canvas.mpl_connect('key_press_event', on_key_press)

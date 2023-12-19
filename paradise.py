@@ -1,3 +1,4 @@
+import sys
 import time
 
 import matplotlib.pyplot as plt
@@ -28,6 +29,11 @@ class Paradise:
         self.fig.canvas.mpl_connect('key_press_event', self.on_key_press)
 
     def update(self, frame: int):
+        sys.stdout.write(f'\rFrame {frame + 1}/{self.frames}')
+        sys.stdout.flush()
+        if frame == self.frames - 1:
+            print()
+            self.ani.event_source.stop()
         new_seeds = np.argwhere(self.land > 0)
         for seed in new_seeds:
             x, y = seed
@@ -46,9 +52,10 @@ class Paradise:
         plt.colorbar(self.img, label='Dandelion presence')
         plt.xlabel('Width')
         plt.ylabel('Height')
-        plt.show()
+        plt.show(block=False)
         print('Simulation finished')
         plt.waitforbuttonpress()
+        plt.close()
 
     def on_key_press(self, event):
         if event.key == ' ':  # Pause

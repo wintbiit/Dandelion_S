@@ -29,46 +29,7 @@ def main():
     env = EnvironmentGenerator()
 
     paradise = Paradise(args.width, args.height, env)
-    paradise.fig.canvas.mpl_connect('key_press_event', on_key_press)
-
-    ani = FuncAnimation(paradise.fig, paradise.update, frames=args.frames, interval=args.interval, blit=True)
-
-    plt.title('Dandelion Spread Simulation')
-    plt.colorbar(paradise.img, label='Dandelion presence')
-    plt.xlabel('Width')
-    plt.ylabel('Height')
-    plt.show()
-
-    ani.event_source.stop()
-
-    print('Simulation finished')
-    ani.save('dandelion_spread.gif', writer='pillow', fps=30)
-
-    # wait for the user to close the window
-    plt.waitforbuttonpress()
-
-
-def on_key_press(event):
-    global ani
-    global paused
-    if event.key == ' ':  # Pause
-        paused = not paused
-        if paused:
-            ani.pause()
-        else:
-            ani.resume()
-    elif event.key == 'enter':  # Save
-        plt.savefig("dandelion_spread-" + time.strftime("%Y%m%d-%H%M%S") + ".png")
-    elif event.key == 'escape':
-        plt.close()
-    elif event.key == 'a':
-        ani.pause()
-        ani.save('dandelion_spread.gif', writer='pillow', fps=30)
-        ani.resume()
-    elif event.key == 'r':
-        ani.event_source.stop()
-        ani = FuncAnimation(paradise.fig, paradise.update, frames=args.frames, interval=args.interval, blit=True)
-        ani.event_source.start()
+    paradise.show(args.frames, args.interval)
 
 
 if __name__ == '__main__':

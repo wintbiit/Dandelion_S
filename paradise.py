@@ -25,7 +25,7 @@ class Paradise:
         self.land[0, 0] = 1
         self.fig, self.ax = plt.subplots()
         self.img = self.ax.imshow(self.land, cmap='Greens', interpolation='nearest')
-        self.img.set_clim(vmin=0, vmax=30)
+        self.img.set_clim(vmin=env.config['VISUAL_VMIN'], vmax=env.config['VISUAL_VMAX'])
         self.fig.canvas.mpl_connect('key_press_event', self.on_key_press)
 
     def update(self, frame: int):
@@ -34,13 +34,18 @@ class Paradise:
         if frame == self.frames - 1:
             print()
             self.ani.event_source.stop()
-        new_seeds = np.argwhere(self.land > 0)
-        for seed in new_seeds:
-            x, y = seed
-            height = self.env.generate_plant_height()
-            dx, dy = self.env.generate_distance_int(height)
-            if 0 <= x + dx < self.width and 0 <= y + dy < self.height:
-                self.land[x + dx, y + dy] += 1
+        if self.paused:
+            return self.img,
+        # 场地上每一块的植物，每一块上有多个植物的遍历
+        for x in range(self.width):
+            for y in range(self.height):
+                for seed in range(self.land[x, y]):
+                    plant_height = self.env.generate_plant_height()
+                    dx, dy = self.env.generate_distance_int(plant_height)
+                    if x + dx < 0 or x + dx >= self.width or y + dy < 0 or y + dy >= self.height:
+                        continue
+                    self.land[x + dx, y + dy] += 1
+
         self.img.set_array(self.land)
         return self.img,
 

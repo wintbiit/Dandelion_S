@@ -11,12 +11,12 @@ def main():
     parser.add_argument('--interval', type=int, default=500)
     parser.add_argument('--frames', type=int, default=100)
 
-    args = parser.parse_args()
+    args = parser.parse_args()      # 从命令行读取参数
 
-    env = EnvironmentGenerator()
+    env = EnvironmentGenerator()    # 生成环境
 
     paradise = Paradise(args.width, args.height, env)
-    paradise.show(args.frames, args.interval)
+    paradise.show(args.frames, args.interval)       # 显示
 
 
 if __name__ == '__main__':

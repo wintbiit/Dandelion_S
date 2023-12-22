@@ -16,6 +16,8 @@ config_env = {
     'SUBSIDE_SPEED_MAX': float(os.getenv('SUBSIDE_SPEED_MAX')),
     'PLANT_HEIGHT_MIN': float(os.getenv('PLANT_HEIGHT_MIN')),
     'PLANT_HEIGHT_MAX': float(os.getenv('PLANT_HEIGHT_MAX')),
+    'VISUAL_VMAX': float(os.getenv('VISUAL_VMAX')),
+    'VISUAL_VMIN': float(os.getenv('VISUAL_VMIN')),
 }
 
 

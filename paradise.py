@@ -1,82 +1,58 @@
-import sys
-import time
+from matplotlib import pyplot as plt
+from mesa import Model, DataCollector
+from mesa.space import MultiGrid
+from mesa.time import RandomActivation
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.animation import FuncAnimation
-
+from dandelion import Dandelion
 from env_generator import EnvironmentGenerator
 
 
-class Paradise:
-    """Dandelion Spread Simulation Environment"""
+class Paradise(Model):
+    def __init__(self, width, height):
+        super().__init__()
+        self.env = EnvironmentGenerator()
+        self.grid = MultiGrid(width, height, True)
+        self.schedule = RandomActivation(self)
+        # model_data = {param: values[step] for param, values in dc.model_vars.items()}
+        self.datacollector = DataCollector(
+            model_reporters={"PlantCount": self.plant_count},
+            agent_reporters={"Seeds": "seeds"},
+        )
+        self.datacollector.collect(self)
 
-    def __init__(self, width: int, height: int, env: EnvironmentGenerator):
-        self.interval: int = 0
-        self.frames: int = 0
-        self.paused = False
-        self.ani: FuncAnimation = None
+        # 左上角生成蒲公英
+        self.spawn_dandelion(0, 0)
 
-        self.width = width
-        self.height = height
-        self.env = env
+    def step(self):
+        self.env.step()  # 更新环境
+        self.schedule.step()  # 更新Agent
 
-        self.land = np.zeros((width, height), dtype=np.int32)
-        self.land[0, 0] = 1
-        self.fig, self.ax = plt.subplots()
-        self.img = self.ax.imshow(self.land, cmap='Greens', interpolation='nearest')
-        self.img.set_clim(vmin=env.config['VISUAL_VMIN'], vmax=env.config['VISUAL_VMAX'])
-        self.fig.canvas.mpl_connect('key_press_event', self.on_key_press)
+    def plant_count(self):
+        """成熟的蒲公英数量"""
+        return sum([1 for agent in self.schedule.agents if agent.is_mature()])
 
-    def update(self, frame: int):
-        sys.stdout.write(f'\rFrame {frame + 1}/{self.frames}')
-        sys.stdout.flush()
-        if frame == self.frames - 1:
-            print()
-            self.ani.event_source.stop()
-        if self.paused:
-            return self.img,
-        # 场地上每一块的植物，每一块上有多个植物的遍历
-        for x in range(self.width):
-            for y in range(self.height):
-                for seed in range(self.land[x, y]):
-                    plant_height = self.env.generate_plant_height()
-                    dx, dy = self.env.generate_distance_int(plant_height)
-                    if x + dx < 0 or x + dx >= self.width or y + dy < 0 or y + dy >= self.height:
-                        continue
-                    self.land[x + dx, y + dy] += 1
+    def is_in_grid(self, pos):
+        x, y = pos
+        return 0 <= x < self.grid.width and 0 <= y < self.grid.height
 
-        self.img.set_array(self.land)
-        return self.img,
+    def spawn_dandelion(self, x, y):
+        dandelion = Dandelion(self.next_id(), self)
+        self.grid.place_agent(dandelion, (x, y))
+        self.schedule.add(dandelion)
 
-    def show(self, frames: int, interval: int):
-        self.frames = frames
-        self.interval = interval
-        self.ani = FuncAnimation(self.fig, self.update, frames=frames, interval=interval, blit=True)
-        plt.title('Dandelion Spread Simulation')
-        plt.colorbar(self.img, label='Dandelion presence')
-        plt.xlabel('Width')
-        plt.ylabel('Height')
-        plt.show(block=False)
-        plt.waitforbuttonpress()
-        plt.close()
+    def visualize(self):
+        plt.figure(figsize=(8, 6))
+        colors = ['yellow', 'blue']
 
-    def on_key_press(self, event):
-        if event.key == ' ':  # Pause
-            self.paused = not self.paused
-            if self.paused:
-                self.ani.pause()
-            else:
-                self.ani.resume()
-        elif event.key == 'enter':  # Save
-            plt.savefig("dandelion_spread-" + time.strftime("%Y%m%d-%H%M%S") + ".png")
-        elif event.key == 'escape':
-            plt.close()
-        elif event.key == 'a':
-            plt.close()
-            print('Saving GIF...')
-            self.ani.save('dandelion_spread.gif', writer='pillow', fps=30)
-            print('GIF saved')
-        elif event.key == 'r':
-            plt.close()
-            self.show(self.frames, self.interval)
+        for cell_content, (x, y) in self.grid.coord_iter():
+            if cell_content:
+                plt.scatter(x, y, color='green', s=50 * len(cell_content))
+
+        plt.title("Dandelion Spread Simulation")
+        plt.xlabel("Width")
+        plt.ylabel("Height")
+        plt.show()
+
+        self.datacollector.get_agent_vars_dataframe().groupby('AgentID').plot()
+
+

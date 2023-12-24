@@ -11,7 +11,7 @@ def agent_portrayal(agent):
         "Shape": "circle",
         "Filled": "true",
         "Layer": 0,
-        "Color": "blue" if agent.is_mature() else "yellow",
+        "Color": "blue" if agent.is_mature() else "green",
         "r": 0.5,
     }
 
@@ -19,6 +19,10 @@ def agent_portrayal(agent):
 def mature_agents(model):
     """成熟的蒲公英数量"""
     return model.plant_count()
+
+
+def temperature(model):
+    return model.env.current_temperature
 
 
 def main():
@@ -37,12 +41,16 @@ def main():
         "height": args.height,
     }
 
-    canvas_element = CanvasGrid(agent_portrayal, args.width, args.height, 500, 500)
-    happy_chart = ChartModule([{"Label": "PlantCount", "Color": "Black"}], data_collector_name='datacollector')
+    canvas_element = CanvasGrid(agent_portrayal, args.width, args.height, 1024, 1024)
+    chart = ChartModule([
+        {"Label": "Mature", "Color": "Black"},
+        {"Label": "Temperature", "Color": "Red"},
+        {"Label": "Lifespan", "Color": "Blue"}
+    ], data_collector_name='datacollector')
 
     server = ModularServer(
         Paradise,
-        [canvas_element, mature_agents, happy_chart],
+        [canvas_element, chart],
         "Dandelion Spread Simulation",
         params,
     )

@@ -8,24 +8,30 @@ from env_generator import EnvironmentGenerator
 
 
 class Paradise(Model):
+    """生长环境Model"""
     def __init__(self, width, height):
         super().__init__()
         self.env = EnvironmentGenerator()
         self.grid = MultiGrid(width, height, True)
         self.schedule = RandomActivation(self)
-        # model_data = {param: values[step] for param, values in dc.model_vars.items()}
         self.datacollector = DataCollector(
-            model_reporters={"PlantCount": self.plant_count},
-            agent_reporters={"Seeds": "seeds"},
+            model_reporters={
+                "Mature": lambda m: m.plant_count(),
+                "Temperature": lambda m: m.env.current_temperature,
+            },
+            agent_reporters={
+                "AgentID": lambda a: a.unique_id,
+                "Lifespan": lambda a: a.lifespan,
+            }
         )
-        self.datacollector.collect(self)
 
         # 左上角生成蒲公英
-        self.spawn_dandelion(0, 0)
+        self.spawn_dandelion(0, 0, 0)
 
     def step(self):
         self.env.step()  # 更新环境
         self.schedule.step()  # 更新Agent
+        self.datacollector.collect(self)
 
     def plant_count(self):
         """成熟的蒲公英数量"""
@@ -35,8 +41,8 @@ class Paradise(Model):
         x, y = pos
         return 0 <= x < self.grid.width and 0 <= y < self.grid.height
 
-    def spawn_dandelion(self, x, y):
-        dandelion = Dandelion(self.next_id(), self)
+    def spawn_dandelion(self, x, y, lifespan=None, height=None):
+        dandelion = Dandelion(self.next_id(), self, lifespan, height)
         self.grid.place_agent(dandelion, (x, y))
         self.schedule.add(dandelion)
 

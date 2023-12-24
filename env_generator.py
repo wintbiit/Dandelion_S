@@ -27,25 +27,30 @@ config_env = {
 
 def generate_distance(plant_height, horizontal_wind, vertical_wind, subside_speed, subside_height):
     """风传播距离"""
-    horizontal_wind_speed = np.sqrt(horizontal_wind[0] ** 2 + horizontal_wind[1] ** 2)
+    wind_x, wind_y = horizontal_wind
+    horizontal_wind_speed = np.sqrt(wind_x ** 2 + wind_y ** 2)
 
-    distance = 0.4 * horizontal_wind_speed / np.log((subside_height - 0.63 * plant_height) / 0.13 * plant_height) \
-               * ((subside_height - 0.63 * plant_height) * np.log(
-        (subside_height - 0.63 * plant_height) / (np.e * 0.13 * plant_height)) + 0.13 * plant_height) \
-               / 0.4 / (subside_speed - vertical_wind)
+    lu = 0.4 * horizontal_wind_speed / np.log((subside_height - 0.63 * plant_height) / 0.13 * plant_height)
+    ld = 0.4 * (subside_speed - vertical_wind)
+    r = ((subside_height - 0.63 * plant_height) * np.log(
+        (subside_height - 0.63 * plant_height) / (np.e * 0.13 * plant_height)) + 0.13 * plant_height)
+
+    distance = lu * r / ld
 
     if np.isnan(distance):
         distance = 0
 
     # 在 horizontal_wind 的方向上，大小为 distance 的向量
-    return (horizontal_wind[0] / horizontal_wind_speed * distance,
-            horizontal_wind[1] / horizontal_wind_speed * distance)
+    dx = distance * wind_x / horizontal_wind_speed
+    dy = distance * wind_y / horizontal_wind_speed
+
+    return dx, dy, distance
 
 
 def generate_distance_int(plant_height, horizontal_wind, vertical_wind, subside_speed, subside_height):
-    dx, dy = generate_distance(plant_height, horizontal_wind, vertical_wind, subside_speed, subside_height)
+    dx, dy, distance = generate_distance(plant_height, horizontal_wind, vertical_wind, subside_speed, subside_height)
 
-    return math.floor(dx), math.floor(dy)
+    return math.floor(dx), math.floor(dy), distance
 
 
 class EnvironmentGenerator:
@@ -58,29 +63,35 @@ class EnvironmentGenerator:
         self.current_subside_speed = None
         self.current_subside_height = None
         self.current_temperature = None
+
         self.step()
 
         self.neighbor_scan_radius = config['NEIGHBOR_SCAN_RADIUS']
         self.neighbor_threshold = config['NEIGHBOR_THRESHOLD']
 
     def step(self):
-        self.current_wind = self.generate_wind_horizontal()
-        self.current_vertical_wind = self.generate_wind_vertical()
-        self.current_subside_speed = self.generate_subside_speed()
-        self.current_subside_height = self.generate_subside_height()
+        # self.current_wind = self.generate_wind_horizontal()
+        # self.current_vertical_wind = self.generate_wind_vertical()
+        # self.current_subside_speed = self.generate_subside_speed()
+        # self.current_subside_height = self.generate_subside_height()
         self.current_temperature = self.generate_temperature()
 
     def generate_distance(self, plant_height):
-        return generate_distance(plant_height, self.current_wind, self.current_vertical_wind, self.current_subside_speed,
+        return generate_distance(plant_height, self.current_wind, self.current_vertical_wind,
+                                 self.current_subside_speed,
                                  self.current_subside_height)
 
     def generate_lifespan(self):
         """随机产生植物寿命"""
         return 10 * np.exp(0.001109 * (self.current_temperature - 55) ** 2) + 75
 
+    # def generate_distance_int(self, plant_height):
+    #     return generate_distance_int(plant_height, self.current_wind, self.current_vertical_wind,
+    #                                  self.current_subside_speed, self.current_subside_height)
+
     def generate_distance_int(self, plant_height):
-        return generate_distance_int(plant_height, self.current_wind, self.current_vertical_wind,
-                                     self.current_subside_speed, self.current_subside_height)
+        return generate_distance_int(plant_height, self.generate_wind_horizontal(), self.generate_wind_vertical(),
+                                     self.generate_subside_speed(), self.generate_subside_height())
 
     def generate_lifespan_int(self) -> int:
         """随机产生植物寿命"""
@@ -110,5 +121,3 @@ class EnvironmentGenerator:
     def generate_temperature(self):
         """随机产生温度"""
         return np.random.randint(self.config['TEMPERATURE_MIN'], self.config['TEMPERATURE_MAX'])
-
-

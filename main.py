@@ -31,6 +31,7 @@ def main():
     parser.add_argument('--height', type=int, default=100)
     parser.add_argument('--interval', type=int, default=500)
     parser.add_argument('--steps', type=int, default=100)
+    parser.add_argument('--port', '-p', type=int, default=8521)
 
     args = parser.parse_args()  # 从命令行读取参数
     print("Running with width {}, height {}, interval {}, frames {}".format(args.width, args.height, args.interval,
@@ -41,21 +42,28 @@ def main():
         "height": args.height,
     }
 
-    canvas_element = CanvasGrid(agent_portrayal, args.width, args.height, 1024, 1024)
-    chart = ChartModule([
-        {"Label": "Mature", "Color": "Black"},
-        {"Label": "Temperature", "Color": "Red"},
-        {"Label": "Lifespan", "Color": "Blue"}
+    canvas_element = CanvasGrid(agent_portrayal, args.width, args.height, args.width * 10, args.height * 10)
+    temperature_chart = ChartModule([
+        {"Label": "Temperature", "Color": "Red"}
+    ], data_collector_name='datacollector')
+    dandelion_chart = ChartModule([
+        {"Label": "All Dandelions", "Color": "Green"},
+    ], data_collector_name='datacollector')
+    mature_dandelion_chart = ChartModule([
+        {"Label": "Mature Dandelions", "Color": "Black"},
+    ], data_collector_name='datacollector')
+    distance_chart = ChartModule([
+        {"Label": "Distance", "Color": "Blue"},
     ], data_collector_name='datacollector')
 
     server = ModularServer(
         Paradise,
-        [canvas_element, chart],
+        [canvas_element, temperature_chart, dandelion_chart, mature_dandelion_chart, distance_chart],
         "Dandelion Spread Simulation",
         params,
     )
 
-    server.launch(open_browser=True)
+    server.launch(open_browser=True, port=args.port)
 
 
 if __name__ == '__main__':
